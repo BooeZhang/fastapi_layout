@@ -16,7 +16,6 @@ def main():
         port=settings.port,
         log_level=settings.log_level.value.lower(),
         factory=True,
-        reload=True
     )
 
 

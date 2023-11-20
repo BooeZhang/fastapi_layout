@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from store.mysql.lifetime import shutdown_mysql, init_mysql
 from store.redis.lifetime import init_redis, shutdown_redis
-from utils.db.create_database import create_db_and_tables
+from utils.db.create_database import create_db_and_tables, create_database
 
 
 def setup_prometheus(app: FastAPI) -> None:  # pragma: no cover
@@ -35,6 +35,7 @@ def register_startup_event(app: FastAPI) -> Callable[[], Awaitable[None]]:
         # await init_kafka(app)
         # setup_prometheus(app)
         app.middleware_stack = app.build_middleware_stack()
+        await create_database()
         await create_db_and_tables()
 
     return _startup

@@ -1,31 +1,25 @@
-import json
-from typing import Callable
+import inspect
+from functools import wraps
+from typing import Callable, TypeVar
 
-import orjson
-from starlette.concurrency import iterate_in_threadpool
-from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi import FastAPI, Response
-from fastapi.requests import Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import ORJSONResponse
 
 
-class UnifyJson(BaseHTTPMiddleware):
+_RT = TypeVar('RT')
 
-    def __init__(self, app: FastAPI) -> None:
-        super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        response = await call_next(request)
-        response_body = [chunk async for chunk in response.body_iterator]
-        copy_body = orjson.loads(response_body[0].decode('utf8'))
-        data = {
-            'code': 200,
-            'msg': 'Ok',
-            'data': copy_body
-        }
-        _dd = orjson.dumps(data)
-        response.headers['content-length'] = str(len(_dd))
-        response_body[0] = _dd
-        print(response_body)
+def unify_json(fn: Callable[..., _RT]) -> Callable[..., _RT]:
+    """
+    统一响应格式
+    """
+    @wraps(fn)
+    async def wrapper(*args, **kwargs) -> _RT:
+        if inspect.iscoroutinefunction(fn):
+            resp = await fn(*args, **kwargs) or []
+        else:
+            resp = fn(*args, **kwargs) or []
 
-        response.body_iterator = iterate_in_threadpool(iter(response_body))
-        return response
+        return ORJSONResponse(content=jsonable_encoder({'code': 200, 'msg': "OK", 'data': resp}))
+
+    return wrapper
