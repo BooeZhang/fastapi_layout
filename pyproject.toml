@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "fastapi-layout"
+version = "0.1.0"
+description = ""
+authors = ["znh <znh@znh>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.110.1"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+loguru = "^0.7.2"
+sqlmodel = "^0.0.16"
+arrow = "^1.3.0"
+bcrypt = "^4.1.2"
+jwt = "^1.3.1"
+yarl = "^1.9.4"
+orjson = "^3.10.1"
+redis = "^5.0.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
