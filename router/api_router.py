@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from handler import index, login
+from service import index, login
 
 api_router = APIRouter(prefix="/api")
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlmodel import Session
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 import repo
 from middleware.unify_json import unify_json
@@ -14,16 +14,20 @@ router = APIRouter()
 
 @router.post("/login", summary="登陆", response_model=LoginRes)
 @unify_json
-async def login(param: LoginReq, db: Session = Depends(get_db_session)) -> LoginRes:
+async def login(
+    param: LoginReq, db: AsyncSession = Depends(get_db_session)
+) -> LoginRes:
     """
     登录
     """
-    _user = repo.get_user_by_name(db, param.username)
+    _user = await repo.get_user_by_name(db, param.username)
     if not _user or not _user.check_pwd(param.password):
         raise code.ErrUserNameOrPwd()
+
     access_token, access_expire = jwtx.create_access_token(
         {"user_id": _user.id, "username": _user.name}
     )
+
     ref_token, ref_expire = jwtx.create_refresh_token(
         {"user_id": _user.id, "username": _user.name}
     )
