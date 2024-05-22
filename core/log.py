@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from typing import Union, Any
@@ -26,6 +27,24 @@ def record_formatter(record: dict[str, Any]) -> str:  # pragma: no cover
         log_format = f"{log_format}{{exception}}"
 
     return log_format
+
+
+def record_json_formatter(record: dict[str, Any]) -> str:
+    log_record = {
+        "time": record["time"].strftime("%Y-%m-%d %H:%M:%S"),
+        "level": record["level"].name,
+        "message": record["message"],
+        "file": record["file"].path,
+        "line": record["line"],
+        "function": record["function"],
+    }
+    return json.dumps(log_record)
+
+
+def sink_serializer(message):
+    record = message.record
+    serialized = json.dumps(record_json_formatter(record))
+    print(serialized, file=sys.stdout)
 
 
 class InterceptHandler(logging.Handler):
@@ -68,17 +87,23 @@ def configure_logging() -> None:
     for logger_name in logging.root.manager.loggerDict:
         if logger_name.startswith("uvicorn."):
             logging.getLogger(logger_name).handlers = []
-        if logger_name.startswith("taskiq."):
-            logging.getLogger(logger_name).root.handlers = [intercept_handler]
+        # if logger_name.startswith("taskiq."):
+        #     logging.getLogger(logger_name).root.handlers = [intercept_handler]
 
-    # change handler for default uvicorn logger
+    # change service for default uvicorn logger
     logging.getLogger("uvicorn").handlers = [intercept_handler]
     logging.getLogger("uvicorn.access").handlers = [intercept_handler]
 
     # set logs output, level and format
     logger.remove()
-    logger.add(
-        sys.stdout,
-        level=settings.log_level.value,
-        format=record_formatter,  # type: ignore
-    )
+    if settings.log_format == "console":
+        logger.add(
+            sys.stdout,
+            level=settings.log_level.value,
+            format=record_formatter,
+        )
+    elif settings.log_format == "json":
+        logger.add(
+            sink_serializer,
+            level=settings.log_level.value,
+        )

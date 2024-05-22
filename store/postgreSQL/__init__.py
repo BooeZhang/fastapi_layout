@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from sqlalchemy import Engine
-from sqlmodel import create_engine, SQLModel, Session, select
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import SQLModel, select, Session
 from models import *
 from models.user import User
 
@@ -9,31 +10,25 @@ from utils import timex
 
 
 class Database:
-    """
-    数据库
-    """
-
     def __init__(self):
-        self.engine: Engine = None
+        self.engine: AsyncEngine | None = None
 
-    def close_connection(self) -> None:
+    async def close_connection(self) -> None:
         if self.engine:
-            self.engine.dispose()
+            await self.engine.dispose()
             self.engine = None
 
     def open_connection(self) -> None:
-        connect_args = {"check_same_thread": False}
-        self.engine = create_engine(
-            str(settings.db_url), echo=settings.db_echo, connect_args=connect_args
-        )
+        self.engine = create_async_engine(str(settings.db_url), echo=settings.db_echo)
 
-    def attach_to_app(self, app: FastAPI):
+    async def attach_to_app(self, app: FastAPI):
         self.open_connection()
         app.state.db_engine = self.engine
-        SQLModel.metadata.create_all(self.engine)
-        self.init_super_user()
+        async with self.engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all)
+        await self.init_super_user()
 
-    def init_super_user(self):
+    async def init_super_user(self):
         """
         初始化超级用户
         """
@@ -44,12 +39,13 @@ class Database:
             update_time=timex.get_now_timestamp(),
         )
         _user.hash_password()
-        with Session(self.engine) as sessions:
+
+        async with AsyncSession(self.engine) as session:
             statement = select(User).where(User.name == settings.super_user)
-            result = sessions.exec(statement).first()
-            if result is None:
-                sessions.add(_user)
-                sessions.commit()
+            result = await session.exec(statement)
+            if result.first() is None:
+                session.add(_user)
+                await session.commit()
 
 
 database = Database()

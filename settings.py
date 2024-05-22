@@ -1,5 +1,4 @@
 import enum
-from typing import Optional
 
 from pydantic.v1 import BaseSettings
 from yarl import URL
@@ -29,21 +28,24 @@ class Settings(BaseSettings):
     # 当前环境
     environment: str = "dev"
     log_level: LogLevel = LogLevel.INFO
+    # 日志输出格式 json 和 console
+    log_format: str = "console"
 
     db_host: str = "127.0.0.1"
-    db_port: int = 3306
-    db_user: str = "root"
+    db_port: int = 5432
+    db_user: str = "postgres"
     db_pass: str = "root"
-    db_base: str = "fastapi_layout"
+    db_base: str = "postgres"
     db_echo: bool = True
     super_user: str = "admin"
     super_user_pwd: str = "admin123456"
 
     redis_host: str = "127.0.0.1"
     redis_port: int = 6379
-    redis_user: Optional[str] = None
-    redis_pass: Optional[str] = None
-    redis_base: Optional[int] = None
+    redis_user: str | None = None
+    redis_pass: str | None = None
+    redis_base: int | None = None
+    redis_cluster: bool = False
 
     rabbit_host: str = "fastapi_layout-rmq"
     rabbit_port: int = 5672
@@ -69,15 +71,14 @@ class Settings(BaseSettings):
         :return: database URL.
         """
 
-        # return URL.build(
-        #     scheme="sqlite",
-        #     host=self.db_host,
-        #     port=self.db_port,
-        #     user=self.db_user,
-        #     password=self.db_pass,
-        #     path=f"/{self.db_base}",
-        # )
-        return "sqlite:///./test.postgreSQL"
+        return URL.build(
+            scheme="postgresql+asyncpg",
+            host=self.db_host,
+            port=self.db_port,
+            user=self.db_user,
+            password=self.db_pass,
+            path=f"/{self.db_base}",
+        )
 
     @property
     def redis_url(self) -> URL:
