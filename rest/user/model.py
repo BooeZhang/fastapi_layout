@@ -1,7 +1,7 @@
 import bcrypt
 from sqlmodel import SQLModel, Field
 
-from models.model import ModelBase
+from rest.common.model import ModelBase
 
 
 class UserBase(SQLModel):

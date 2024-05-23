@@ -5,11 +5,10 @@ from fastapi.responses import ORJSONResponse
 
 from core.handle_exception import register_exception
 from middleware import register_middleware
-
+from router import register_api_routes
 from settings import settings
 
 from core.log import configure_logging
-from router.api_router import api_router
 from store.postgreSQL import database
 from store.redis import redis_pool
 
@@ -41,6 +40,5 @@ def get_application():
 
     register_middleware(app)
     register_exception(app)
-
-    app.include_router(router=api_router)
+    register_api_routes(app)
     return app

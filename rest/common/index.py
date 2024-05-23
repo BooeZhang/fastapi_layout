@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
 
 from middleware.unify_json import unify_json
-from serialization.index import Message
+from rest.common.schemas import Message
 
 from store.redis.dependency import get_redis_client
 

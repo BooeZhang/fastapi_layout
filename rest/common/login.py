@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-import repo
 from middleware.unify_json import unify_json
-from models.user import UserRes
-from serialization.login import LoginReq, LoginRes
+from rest.common.schemas import LoginReq, LoginRes
+from rest.user import repo
+from rest.user.model import UserRes
 from store.postgreSQL.dependencies import get_db_session
 from utils import jwtx
 from utils.erroron import code
