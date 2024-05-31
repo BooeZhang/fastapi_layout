@@ -1,7 +1,7 @@
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from models.user import User
+from rest.user.model import User
 
 
 async def get_user_by_name(db: AsyncSession, username: str) -> User:

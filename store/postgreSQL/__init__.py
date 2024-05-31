@@ -2,9 +2,8 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import SQLModel, select, Session
-from models import *
-from models.user import User
 
+from rest.user.model import User
 from settings import settings
 from utils import timex
 

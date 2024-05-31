@@ -2,6 +2,8 @@ from typing import List, Any
 
 from pydantic import BaseModel
 
+from rest.user.model import UserRes
+
 
 class ByIds(BaseModel):
     """
@@ -48,3 +50,24 @@ class ListMetaRes(BaseModel):
     page_size: int
     data: List[Any]
     total: int
+
+
+class Message(BaseModel):
+    message: str
+
+
+class LoginReq(BaseModel):
+    """登录请求参数"""
+
+    username: str
+    password: str
+
+
+class LoginRes(BaseModel):
+    """登录响应参数"""
+
+    access_token: str
+    expire: int
+    refresh_token: str
+    refresh_expire: int
+    user_info: UserRes
