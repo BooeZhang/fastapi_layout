@@ -15,9 +15,11 @@ from store.redis import redis_pool
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await database.attach_to_app(app)
-    redis_pool.attach_to_app(app)
-    yield
+    db_engine = await database.attach_to_app(app)
+    r_pool = redis_pool.attach_to_app(app)
+
+    # 注入生命周期状态
+    yield {"redis_pool": r_pool, "db_engine": db_engine}
     await database.close_connection()
     await redis_pool.close_connection()
 

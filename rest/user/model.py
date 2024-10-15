@@ -10,7 +10,7 @@ class UserBase(SQLModel):
     """
 
     name: str = Field(index=True)
-    pwd: str
+    password: str
 
 
 class User(ModelBase, UserBase, table=True):
@@ -19,9 +19,9 @@ class User(ModelBase, UserBase, table=True):
     """
 
     def hash_password(self):
-        pwd = self.pwd.encode("utf8")
+        pwd = self.password.encode("utf8")
         salt = bcrypt.gensalt()
-        self.pwd = bcrypt.hashpw(pwd, salt).decode("utf8")
+        self.password = bcrypt.hashpw(pwd, salt).decode("utf8")
 
     def check_pwd(self, password: str) -> bool:
         return bcrypt.checkpw(password.encode("utf8"), self.pwd.encode("utf8"))

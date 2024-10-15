@@ -1,13 +1,11 @@
 from fastapi.encoders import jsonable_encoder
-from fastapi.exception_handlers import (
-    request_validation_exception_handler,
-    http_exception_handler,
-)
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import Request
+from loguru import logger as log
 
 from utils.erroron.base import CustomException
 from utils.erroron.code import AuthorizationException
@@ -43,4 +41,8 @@ def register_exception(app):
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc):
-        return await request_validation_exception_handler(request, exc)
+        log.error(f"{request.url.path} 参数错误: {exc.errors()}")
+        return ORJSONResponse(
+            status_code=400,
+            content=jsonable_encoder({"code": 400, "msg": "参数错误", "data": None}),
+        )

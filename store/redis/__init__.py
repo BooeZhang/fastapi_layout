@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 import redis.asyncio as redis
 from redis.asyncio import ConnectionPool
 
@@ -21,9 +20,9 @@ class Redisx:
     def open_connection(self) -> None:
         self.redis_pool = redis.ConnectionPool.from_url(str(settings.redis_url))
 
-    def attach_to_app(self, app: FastAPI):
+    def attach_to_app(self) -> ConnectionPool:
         self.open_connection()
-        app.state.redis_pool = self.redis_pool
+        return self.redis_pool
 
 
 redis_pool = Redisx()
